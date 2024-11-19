@@ -1,5 +1,6 @@
 cd ./config
 gdown 1K4ELUhZreCQduoBNAhQF5KMHAdrKMzTz
+cd ..
 
 mkdir ./Logs
 cd ./Logs
@@ -11,13 +12,12 @@ rm ./VioPose_wo_audio.zip
 rm ./VioPose.zip
 cd ..
 
+mkdir ./output
+mkdir ./out_log
 mkdir ./data
 mkdir ./data/demo
 mkdir ./data/FullData
-cd data/demo
+cd ./data/demo
 gdown 1OkjDUp2XRVWxOLAOIu5tZiYyO8RhJNmW
 gdown 1e8RzQjjfcoITnGQ5TbAQsvgkLD_H12sc
 cd ..
-
-mkdir ./output
-mkdir ./out_log
