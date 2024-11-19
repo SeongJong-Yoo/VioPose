@@ -147,11 +147,9 @@ dmypy.json
 
 # Logs
 Logs/
-Logs_old/
 *.out 
 wandb/
 
-*.sh
 *.yaml
 
 # Weights
