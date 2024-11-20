@@ -2,11 +2,11 @@
 # VioPose 
 This repository provides code and pretrained weights for the paper. The code is provided without any warranty. If using this code, please cite our work as shown below. For more information please visit our [project website](https://sj-yoo.info/viopose/) 
 
-	@inproceedings{Hong_2021_ICCV,
-    	author    = {Yoo, Seong Jong and Shrestha, Snehesh and Muresanu, Irina and Fermuller, Cornelia},
-    	title     = {{VioPose}: Violin Performance 4D Pose Estimation by Hierarchical Audiovisual Inference},
-    	booktitle = {Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
-    	year      = {2025},
+	@inproceedings{yooshrestha2024viopose,
+		title     = {{VioPose}: Violin Performance 4D Pose Estimation by Hierarchical Audiovisual Inference},
+		author    = {Yoo, Seong Jong and Shrestha, Snehesh and Muresanu, Irina and Fermüller, Cornelia},
+		journal   = {Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
+		year      = {2025},
 	}
 
 ## Installation 
@@ -49,3 +49,7 @@ python3 test.py --folder /Logs/viopose --data violin --data_path data/FullData/m
 
 ## Bug Report
 Please raise an issue on Github for issues related to this code. If you have any questions related about the code feel free to send an email to here (yoosj@umd.edu). 
+
+
+## License
+VioPose and VioDat is available for non-commercial and research use only and may not be redistributed and should follow requirements under the conditions detailed on the [license page](#). For commercial licensing or if you have any questions, please get in touch with us at yoosj@umd.edu.
