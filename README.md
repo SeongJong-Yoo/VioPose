@@ -1,6 +1,6 @@
 
 # VioPose 
-This repository provides code and pretrained weights for the paper. The code is provided without any warranty. If using this code, please cite our work as shown below. For more information please visit our [project website](https://sj-yoo.info/viopose/) 
+This repository provides code and pretrained weights for the paper. The code is provided without any warranty. If you benefited from the work, or partially or directly use our code, please cite our work as shown below. For more information please visit our [project website](https://sj-yoo.info/viopose/) 
 
 	@inproceedings{yooshrestha2024viopose,
 		title     = {{VioPose}: Violin Performance 4D Pose Estimation by Hierarchical Audiovisual Inference},
@@ -40,7 +40,7 @@ python3 inference.py --folder Logs/VioPose --video_path data/demo/demo.mp4 --aud
 - The output video is saved at `./output/output_w_audio.mp4` with audio and `./output/output.mp4` without audio
 
 ## Train from Scratch
-1. Prepare *VioDat* at `./data/FullData` (currently unavailable)
+1. Prepare [*VioDat Dataset*](https://www.snehesh.com/viodat/) at `./data/FullData`
 2. Run `main.py` script
 ```
 python3 main.py --cfg ./config/viopose.yaml > ./out_log/viopose.out
@@ -52,4 +52,4 @@ Please raise an issue on Github for issues related to this code. If you have any
 
 
 ## License
-VioPose and VioDat is available for non-commercial and research use only and may not be redistributed and should follow requirements under the conditions detailed on the [license page](#). For commercial licensing or if you have any questions, please get in touch with us at yoosj@umd.edu.
+VioPose and [VioDat](https://www.snehesh.com/viodat/) is available for non-commercial and research use only and may not be redistributed and should follow requirements under the conditions detailed on the [license page](#). For commercial licensing or if you have any questions, please get in touch with us at yoosj@umd.edu.
