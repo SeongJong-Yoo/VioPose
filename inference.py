@@ -266,9 +266,9 @@ def process_video(video_path, audio_path):
     
     return data
 
-def slice_dataset(dataset, cfg):
-    audio_frame = cfg.MODEL.AUDIO_MODULE.FRAME
-    audio_dim = dataset['audio_data_100FPS'].shape[1]
+def slice_dataset(dataset, cfg, MUSIC):
+    audio_frame = None
+    audio_dim = None
     fps = dataset['kp_video_fps']
     num_chunks = math.ceil(len(dataset['mediapipe_2d']) / cfg.DATA.STRIDE)
     output = {"mediapipe_2d": [dataset['mediapipe_2d'][:cfg.DATA.STRIDE][np.newaxis, ...]],
@@ -276,6 +276,8 @@ def slice_dataset(dataset, cfg):
               "info":[np.concatenate((np.zeros(cfg.DATA.STRIDE), [1]))]}
     
     if MUSIC:
+        audio_frame = cfg.MODEL.AUDIO_MODULE.FRAME
+        audio_dim = dataset['audio_data_100FPS'].shape[1]
         output["audio_data_100FPS"] = [dataset['audio_data_100FPS'][:audio_frame][np.newaxis, ...]]
 
     for i in range(1, num_chunks):
@@ -310,7 +312,7 @@ def slice_dataset(dataset, cfg):
 
     return output, audio_frame, audio_dim
 
-def merge(envelope):
+def merge(envelope, KALMAN_FILTER):
     output = {'pred': [],
               'input': []}
     
@@ -352,7 +354,7 @@ def heap_centered(input):
     return np.transpose(output, [1, 0, 2])[np.newaxis, ...]  # (frame, joint, dim)
 
 
-def evaluate(model, test_ds):
+def evaluate(model, test_ds, MUSIC, KALMAN_FILTER):
     envelope = {'pred': [],
                 'input': [],
                 'info_list': []}
@@ -367,7 +369,7 @@ def evaluate(model, test_ds):
         if MUSIC:
             audio_x = test_ds['audio_data_100FPS'][i]
         else:
-            audio_x = None
+            audio_x = np.zeros_like(pose_x)
 
         output = model([pose_x, audio_x], training=False)
 
@@ -379,7 +381,7 @@ def evaluate(model, test_ds):
             envelope['acc'].append(np.squeeze(output['acc'].numpy()))
             envelope['vel'].append(np.squeeze(output['vel'].numpy()))
 
-    return merge(envelope)
+    return merge(envelope, KALMAN_FILTER)
 
 def draw_img(data, video_path, out_root):
     kp = data['input']
@@ -503,13 +505,13 @@ def combine_audio(video_path, audio_path, save_path):
     final_clip.write_videofile(os.path.join(save_path, "output_w_audio.mp4"), codec='libx264')
 
 
-KALMAN_FILTER=True
-MUSIC=True
-
 def main():
+    KALMAN_FILTER=True
+    MUSIC=True
     args = parse_args()
     if args.audio_path==None:
-        cfg_path = os.path.join(args.folder+'_wo_audio', 'cfg_parameters.yaml')    
+        args.folder = args.folder + '_wo_audio'
+        cfg_path = os.path.join(args.folder, 'cfg_parameters.yaml')    
         MUSIC=False
         print("######### Using model without audio #########")
     else:
@@ -524,13 +526,13 @@ def main():
 
     dataset = process_video(args.video_path, args.audio_path)
 
-    test_ds, audio_frame, audio_dim = slice_dataset(dataset, cfg)
+    test_ds, audio_frame, audio_dim = slice_dataset(dataset, cfg, MUSIC)
 
     # Load Model
     model, ONLY_LOSS = build_model(cfg, audio_frame, audio_dim)
     model = read_model(args.folder, "best", model)
 
-    output = evaluate(model,test_ds)
+    output = evaluate(model,test_ds, MUSIC, KALMAN_FILTER)
 
     if KALMAN_FILTER:
         output['pred']=kalman_filter(output['pred'], output['vel'], output['acc'])

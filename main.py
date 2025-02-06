@@ -119,7 +119,7 @@ def main():
         if 'audio' in input:
             audio_x = input['audio']
         else:
-            audio_x = None
+            audio_x = np.zeros_like(pose_x)
 
         with tf.GradientTape() as tape:
             output = model([pose_x, audio_x], training=training)
