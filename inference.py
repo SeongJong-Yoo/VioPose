@@ -383,26 +383,57 @@ def evaluate(model, test_ds, MUSIC, KALMAN_FILTER):
 
     return merge(envelope, KALMAN_FILTER)
 
-def draw_img(data, video_path, out_root):
+def remove_folder(dir):
+    for root, dirs, files in os.walk(dir):
+        for f in files:
+            try:
+                file_path = os.path.join(root, f)
+                os.unlink(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' %(file_path, e))
+                break
+
+        for d in dirs:
+            try:
+                dir_path = os.path.join(root, d)
+                shutil.rmtree(dir_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' %(dir_path, e))
+                break
+
+    try:
+        shutil.rmtree(dir)
+    except Exception as e:
+        print('Failed to delete %s. Reason: %s' %(dir, e))
+
+def make_video(data, video_path, root_path, fps):
+    save_path = os.path.join(root_path, 'output.mp4')
+    
     kp = data['input']
     kp_3d = data['pred']
     cap = cv2.VideoCapture(video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
     video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    kp_path = os.path.join(out_root, 'img')
-    if not os.path.exists(kp_path):
-        os.mkdir(kp_path)
+    fig  = plt.figure(dpi=300)
+    plt.subplots_adjust(wspace=0.01)
+    plt.axis("off")
 
-    counter = 0
-    for i in range(video_length):
+    fig.canvas.draw()
+    img = np.array(fig.canvas.buffer_rgba())
+    img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
+    height, width, _ = img.shape
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    video_writer = cv2.VideoWriter(save_path, fourcc, fps, (width, height))
+
+    for i in tqdm(range(video_length)):
+        plt.clf()
+
         ret, img = cap.read()
-        width, height, _ = img.shape
-        dpi = 300
-        fig = plt.figure(dpi=dpi)
+
         ax = plt.subplot(1, 2, 1)
-        plt.subplots_adjust(wspace=0.01)
-        plt.axis("off")
-        ax.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))            
+        ax.imshow(img)            
 
         ax.scatter(kp[i][:, 0], kp[i][:, 1], color='red', s=2, alpha=1)
         ax.set_xlim(0, height)
@@ -450,52 +481,16 @@ def draw_img(data, video_path, out_root):
 
         ax.view_init(280, -90)
 
-        out_dir = os.path.join(kp_path, str(i))
-        plt.savefig(out_dir, bbox_inches='tight', pad_inches = 0)
-        counter += 1
-        plt.close()
+        fig.canvas.draw()
 
-def remove_folder(dir):
-    for root, dirs, files in os.walk(dir):
-        for f in files:
-            try:
-                file_path = os.path.join(root, f)
-                os.unlink(file_path)
-            except Exception as e:
-                print('Failed to delete %s. Reason: %s' %(file_path, e))
-                break
+        img = np.array(fig.canvas.buffer_rgba())
+        img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
 
-        for d in dirs:
-            try:
-                dir_path = os.path.join(root, d)
-                shutil.rmtree(dir_path)
-            except Exception as e:
-                print('Failed to delete %s. Reason: %s' %(dir_path, e))
-                break
+        video_writer.write(img)
 
-    try:
-        shutil.rmtree(dir)
-    except Exception as e:
-        print('Failed to delete %s. Reason: %s' %(dir, e))
+    video_writer.release()
+    plt.close(fig)
 
-def make_video(data, video_path, root_path, fps):
-    save_path = os.path.join(root_path, 'output.mp4')
-    draw_img(data, video_path, root_path)
-
-    img_path = os.path.join(root_path, 'img')
-    img_list = []
-    img_path_list = natsort.natsorted(os.listdir(img_path))
-    for i in range(len(img_path_list)):
-        img_list.append(cv2.imread(os.path.join(img_path, img_path_list[i])))
-
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    h, w, l = img_list[0].shape
-    out = cv2.VideoWriter(save_path, fourcc, fps, (w,h))
-    for i in range(len(img_list)):
-        out.write(img_list[i])
-
-    out.release()
-    remove_folder(img_path)
 
 def combine_audio(video_path, audio_path, save_path):
     from moviepy.editor import VideoFileClip, AudioFileClip
@@ -546,6 +541,10 @@ def main():
         if args.audio_path!=None:
             combine_audio(os.path.join(save_path, 'output.mp4'), args.audio_path, save_path)
 
+    result = {"input": output['input'],
+              "pred": output['pred']}
+    
+    np.save(os.path.join(save_path, 'result.npy'), result)
 
 
 if __name__ == '__main__':
