@@ -415,29 +415,33 @@ def make_video(data, video_path, root_path, fps):
     fps = cap.get(cv2.CAP_PROP_FPS)
     video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    fig  = plt.figure(dpi=300)
-    plt.subplots_adjust(wspace=0.01)
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    dpi = 300
+    fig  = plt.figure(dpi=dpi, figsize=(2*width/dpi, height/dpi))
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
     plt.axis("off")
 
     fig.canvas.draw()
-    img = np.array(fig.canvas.buffer_rgba())
-    img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
-    height, width, _ = img.shape
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    video_writer = cv2.VideoWriter(save_path, fourcc, fps, (width, height))
+    video_writer = cv2.VideoWriter(save_path, fourcc, fps, (2*width, height))
 
+    counter = 0
     for i in tqdm(range(video_length)):
         plt.clf()
 
         ret, img = cap.read()
 
-        ax = plt.subplot(1, 2, 1)
+        ax = plt.subplot(1, 2, 1)       
         ax.imshow(img)            
 
         ax.scatter(kp[i][:, 0], kp[i][:, 1], color='red', s=2, alpha=1)
-        ax.set_xlim(0, height)
-        ax.set_ylim(width, 0)
+        ax.set_xlim(0, width)
+        ax.set_ylim(height, 0)
+        ax.set_xticks([])
+        ax.set_yticks([])
         if kp.shape[1]==18:
             connection = connected_mediapipe
         else:
@@ -481,6 +485,7 @@ def make_video(data, video_path, root_path, fps):
 
         ax.view_init(280, -90)
 
+        plt.tight_layout(pad=0)
         fig.canvas.draw()
 
         img = np.array(fig.canvas.buffer_rgba())
