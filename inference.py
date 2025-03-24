@@ -487,7 +487,7 @@ def make_video(data, video_path, root_path, fps):
 
         ax.view_init(280, -90)
 
-        plt.tight_layout(pad=0)
+        # plt.tight_layout(pad=0)
         fig.canvas.draw()
 
         img = np.array(fig.canvas.buffer_rgba())
