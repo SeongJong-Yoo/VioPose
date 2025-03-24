@@ -39,8 +39,9 @@ def parse_args():
                         help='/AUDIO/PATH.wav',
                         type=str)
     parser.add_argument('--vis',
+                        type=lambda x: x.lower() == 'true',
                         default=True,
-                        help='Visualize the result')
+                        help='Visualize the result (--vis False to disable)')
     args = parser.parse_args()
 
     return args
@@ -250,8 +251,9 @@ def audio_feature_extraction(audio_path, vid_FPS, kp):
     audio_FPS = 100
     ref_len = int(len(kp) * audio_FPS / vid_FPS)
             
-    audio_feature, _ = match_audio_feature(audio_path, audio_FPS, HOP_LENGTH, ref_len)
+    audio_feature, audio_FPS = match_audio_feature(audio_path, audio_FPS, HOP_LENGTH, ref_len)
 
+    print(f"Audio features are extracted with audio_FPS: {audio_FPS}")
     return audio_feature
 
 
@@ -538,8 +540,8 @@ def main():
         output['pred']=kalman_filter(output['pred'], output['vel'], output['acc'])
 
 
+    save_path = './output'
     if args.vis:
-        save_path = './output'
         print("######### Video saving at: ", save_path, " #########")
         # Generate Video
         make_video(output, args.video_path, save_path, dataset['kp_video_fps'])
@@ -547,7 +549,8 @@ def main():
             combine_audio(os.path.join(save_path, 'output.mp4'), args.audio_path, save_path)
 
     result = {"input": output['input'],
-              "pred": output['pred']}
+              "pred": output['pred'],
+              "fps": dataset['kp_video_fps']}
     
     np.save(os.path.join(save_path, 'result.npy'), result)
 
